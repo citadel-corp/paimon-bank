@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/citadel-corp/go-project-template/internal/common/request"
-	"github.com/citadel-corp/go-project-template/internal/common/response"
+	"github.com/citadel-corp/paimon-bank/internal/common/request"
+	"github.com/citadel-corp/paimon-bank/internal/common/response"
 )
 
 type Handler struct {
@@ -28,7 +28,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userResp, err := h.service.Create(r.Context(), req)
-	if errors.Is(err, ErrUsernameAlreadyExists) {
+	if errors.Is(err, ErrEmailAlreadyExists) {
 		response.JSON(w, http.StatusConflict, response.ResponseBody{
 			Message: "User already exists",
 			Error:   err.Error(),

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/citadel-corp/go-project-template/internal/common/jwt"
-	"github.com/citadel-corp/go-project-template/internal/common/password"
+	"github.com/citadel-corp/paimon-bank/internal/common/jwt"
+	"github.com/citadel-corp/paimon-bank/internal/common/password"
 )
 
 type Service interface {
@@ -32,7 +32,7 @@ func (s *userService) Create(ctx context.Context, req CreateUserPayload) (*UserR
 		return nil, err
 	}
 	user := &User{
-		Username:       req.Username,
+		Email:          req.Email,
 		Name:           req.Name,
 		HashedPassword: hashedPassword,
 	}
@@ -46,7 +46,7 @@ func (s *userService) Create(ctx context.Context, req CreateUserPayload) (*UserR
 		return nil, err
 	}
 	return &UserResponse{
-		Username:    req.Username,
+		Email:       req.Email,
 		Name:        req.Name,
 		AccessToken: accessToken,
 	}, nil
@@ -57,7 +57,7 @@ func (s *userService) Login(ctx context.Context, req LoginPayload) (*UserRespons
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
-	user, err := s.repository.GetByUsername(ctx, req.Username)
+	user, err := s.repository.GetByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -69,12 +69,12 @@ func (s *userService) Login(ctx context.Context, req LoginPayload) (*UserRespons
 		return nil, ErrWrongPassword
 	}
 	// create access token with signed jwt
-	accessToken, err := jwt.Sign(time.Minute*2, fmt.Sprint(user.ID))
+	accessToken, err := jwt.Sign(time.Hour*8, fmt.Sprint(user.ID))
 	if err != nil {
 		return nil, err
 	}
 	return &UserResponse{
-		Username:    user.Username,
+		Email:       user.Email,
 		Name:        user.Name,
 		AccessToken: accessToken,
 	}, nil
