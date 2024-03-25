@@ -1,6 +1,6 @@
-DROP INDEX IF EXISTS users_username;
+DROP INDEX IF EXISTS users_email;
 
 DROP TABLE IF EXISTS users;
 
-ALTER TABLE users DROP CONSTRAINT users_username_unique UNIQUE (username);
+ALTER TABLE users DROP CONSTRAINT users_email_unique UNIQUE (email);
 ALTER TABLE users ALTER COLUMN created_at SET DEFAULT;
