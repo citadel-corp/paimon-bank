@@ -75,7 +75,6 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(middleware.Logging)
 	r.Use(middleware.PanicRecoverer)
-	r.Use(middleware.PrometheusMiddleware)
 	r.Handle("/metrics", promhttp.Handler())
 	v1 := r.PathPrefix("/v1").Subrouter()
 
