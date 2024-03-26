@@ -1,0 +1,24 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfiles/backend/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      # ⚠️ not a good production practice, because hacker can snoop the docker env within the docker container
+      # but we need it for our demonstration
+      DB_NAME: ${DB_NAME}
+      DB_PORT: ${DB_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PARAMS: ${DB_PARAMS}
+      JWT_SECRET: ${JWT_SECRET}
+      BCRYPT_SALT: ${BCRYPT_SALT}
+      S3_ID: ${S3_ID}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_REGION: ${S3_REGION}
+      ENV: ${ENV}
