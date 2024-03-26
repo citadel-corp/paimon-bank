@@ -22,3 +22,25 @@ services:
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
       S3_REGION: ${S3_REGION}
       ENV: ${ENV}
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      # • `./prometheus.yml` refers to `./prometheus.yml` that exists in current directory
+      # • `/etc/prometheus/prometheus.yml` refers to where `./prometheus.yml` will be placed inside the container
+      - prometheus_data:/prometheus
+      # • `prometheus_data` refers to `volumes.prometheus_data` used to make prometheus information presists each restart
+      # •  `/prometheus` refers to where should `volumes.grafana_data` will be placed inside the grafana container
+    command:
+      # tell the prometheus to use `/etc/prometheus/prometheus.yml`
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      # tell the prometheus to use `/prometheus` as the storage path
+      - '--storage.tsdb.path=/prometheus'
+      # tell prometheus to reload if we hit `http://localhost:9090/-/reload` to reload changes in `./prometheus.yml`
+      - '--web.enable-lifecycle'
+
+volumes:
+  prometheus_data:
