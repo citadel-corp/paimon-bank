@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/citadel-corp/paimon-bank/internal/common/db"
 	"github.com/citadel-corp/paimon-bank/internal/common/middleware"
+	"github.com/citadel-corp/paimon-bank/internal/common/response"
 	"github.com/citadel-corp/paimon-bank/internal/image"
 	"github.com/citadel-corp/paimon-bank/internal/user"
 	"github.com/gorilla/mux"
@@ -91,6 +92,23 @@ func main() {
 	// image routes
 	ir := v1.PathPrefix("/image").Subrouter()
 	ir.HandleFunc("", middleware.Authorized(imageHandler.UploadToS3)).Methods(http.MethodPost)
+
+	// healthcheck endpoint
+	r.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		dbStatus := "ok"
+		statusCode := http.StatusOK
+
+		err := db.DB().Ping()
+		if err != nil {
+			dbStatus = "not ok"
+			statusCode = http.StatusServiceUnavailable
+
+		}
+		response.JSON(w, statusCode, map[string]string{
+			"service":  "ok",
+			"database": dbStatus,
+		})
+	})
 
 	httpServer := &http.Server{
 		Addr:     ":8080",
