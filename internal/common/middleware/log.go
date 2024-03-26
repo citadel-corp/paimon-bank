@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/citadel-corp/paimon-bank/internal/common/id"
+	"github.com/citadel-corp/paimon-bank/internal/common/metrics"
 	"github.com/citadel-corp/paimon-bank/internal/common/response"
 )
 
@@ -45,6 +46,7 @@ func Logging(next http.Handler) http.Handler {
 			slog.String("requestID", requestID),
 			slog.String("method", r.Method),
 		)
+		metrics.HttpRequestProm.WithLabelValues(r.URL.Path, r.Method, http.StatusText(logRespWriter.statusCode)).Observe(float64(time.Since(startTime).Milliseconds()))
 		var resp response.ResponseBody
 		err := json.NewDecoder(&logRespWriter.buf).Decode(&resp)
 		if logRespWriter.statusCode >= 500 && err == nil {
