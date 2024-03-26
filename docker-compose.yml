@@ -22,6 +22,7 @@ services:
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
       S3_REGION: ${S3_REGION}
       ENV: ${ENV}
+  #   network_mode: "host"
 
   prometheus:
     image: prom/prometheus:latest
@@ -41,6 +42,26 @@ services:
       - '--storage.tsdb.path=/prometheus'
       # tell prometheus to reload if we hit `http://localhost:9090/-/reload` to reload changes in `./prometheus.yml`
       - '--web.enable-lifecycle'
+    # network_mode: "host"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      # • `grafana_data` refers to `volumes.grafana_data` used to make grafana information presists each restart
+      # •  `/var/lib/grafana` refers to where should `volumes.grafana_data` will be placed inside the grafana container
+      - ./grafana-configs:/etc/grafana/provisioning:ro
+      # • `./grafana-configs` refers to `grafana-configs` folder in host, push the folder in the repository
+      #    to retain the config and keeping the panels that already created and deploy it everywhere
+      # • `/etc/grafana/provisioning` refers to where should `grafana-configs` will be placed inside the grafana container
+      # • `:ro` means "read only", this will prevent accidental edit from grafana itself, it's a good security practice
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    # network_mode: "host"
 
 volumes:
   prometheus_data:
+  grafana_data:
