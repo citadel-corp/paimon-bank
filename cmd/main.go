@@ -21,6 +21,7 @@ import (
 	"github.com/citadel-corp/paimon-bank/internal/user"
 	"github.com/gorilla/mux"
 	"github.com/lmittmann/tint"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -74,6 +75,8 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(middleware.Logging)
 	r.Use(middleware.PanicRecoverer)
+	r.Use(middleware.PrometheusMiddleware)
+	r.Handle("/metrics", promhttp.Handler())
 	v1 := r.PathPrefix("/v1").Subrouter()
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +94,7 @@ func main() {
 	ir.HandleFunc("", middleware.Authorized(imageHandler.UploadToS3)).Methods(http.MethodPost)
 
 	httpServer := &http.Server{
-		Addr:     ":8000",
+		Addr:     ":8080",
 		Handler:  r,
 		ErrorLog: slog.NewLogLogger(slogHandler, slog.LevelError),
 	}
