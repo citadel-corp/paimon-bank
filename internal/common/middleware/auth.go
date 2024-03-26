@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/citadel-corp/go-project-template/internal/common/jwt"
+	"github.com/citadel-corp/paimon-bank/internal/common/jwt"
 )
 
 type ContextAuthKey struct{}

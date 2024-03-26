@@ -1,1 +1,1 @@
-# go-project-template
+# paimon-bank

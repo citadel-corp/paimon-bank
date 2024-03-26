@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"github.com/citadel-corp/go-project-template/internal/common/response"
+	"github.com/citadel-corp/paimon-bank/internal/common/response"
 )
 
 func PanicRecoverer(next http.Handler) http.Handler {
