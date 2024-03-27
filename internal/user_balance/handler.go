@@ -60,6 +60,33 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserID(r)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var req ListUserBalancePayload
+
+	req.UserID = userID
+
+	resp := h.service.List(r.Context(), req)
+	if resp.Error != "" {
+		response.JSON(w, resp.Code, response.ResponseBody{
+			Message: resp.Message,
+			Error:   resp.Error,
+		})
+		return
+	}
+
+	response.JSON(w, resp.Code, response.ResponseBody{
+		Message: resp.Message,
+		Data:    resp.Data,
+	})
+}
+
 func getUserID(r *http.Request) (string, error) {
 	if authValue, ok := r.Context().Value(middleware.ContextAuthKey{}).(string); ok {
 		return authValue, nil

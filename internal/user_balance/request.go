@@ -31,3 +31,7 @@ func (p CreateUserBalancePayload) Validate() error {
 		validation.Field(&p.TransferProofImg, validation.Required, imgUrlValidationRule),
 	)
 }
+
+type ListUserBalancePayload struct {
+	UserID string
+}
