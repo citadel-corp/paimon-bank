@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/citadel-corp/paimon-bank/internal/common/db"
+	"github.com/citadel-corp/paimon-bank/internal/common/id"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -45,12 +46,12 @@ func (d *dbRepository) RecordBalance(ctx context.Context, payload CreateUserBala
 		// insert into transactions
 		createTransactionQuery := `
 			INSERT INTO user_transactions (
-				user_id, amount, currency, bank_account_number, bank_name, image_url
+				id, user_id, amount, currency, bank_account_number, bank_name, image_url
 			) VALUES (
-				$1, $2, $3, $4, $5, $6
+				$1, $2, $3, $4, $5, $6, $7
 			)
 		`
-		_, err = tx.ExecContext(ctx, createTransactionQuery, payload.UserID, payload.AddedBalance, payload.Currency, payload.SenderBankAccountNumber, payload.SenderBankName, payload.TransferProofImg)
+		_, err = tx.ExecContext(ctx, createTransactionQuery, id.GenerateStringID(16), payload.UserID, payload.AddedBalance, payload.Currency, payload.SenderBankAccountNumber, payload.SenderBankName, payload.TransferProofImg)
 		if err != nil {
 			return err
 		}
@@ -86,12 +87,12 @@ func (d *dbRepository) RecordTransaction(ctx context.Context, payload CreateTran
 		// insert into transactions
 		createTransactionQuery := `
 			INSERT INTO user_transactions (
-				user_id, amount, currency, bank_account_number, bank_name
+				id, user_id, amount, currency, bank_account_number, bank_name
 			) VALUES (
-				$1, $2, $3, $4, $5
+				$1, $2, $3, $4, $5, $6
 			)
 		`
-		_, err = tx.ExecContext(ctx, createTransactionQuery, payload.UserID, -payload.Balances, payload.FromCurrency, payload.RecipientBankAccountNumber, payload.RecipientBankName)
+		_, err = tx.ExecContext(ctx, createTransactionQuery, id.GenerateStringID(16), payload.UserID, -payload.Balances, payload.FromCurrency, payload.RecipientBankAccountNumber, payload.RecipientBankName)
 		if err != nil {
 			return err
 		}
