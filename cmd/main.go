@@ -20,6 +20,7 @@ import (
 	"github.com/citadel-corp/paimon-bank/internal/common/response"
 	"github.com/citadel-corp/paimon-bank/internal/image"
 	"github.com/citadel-corp/paimon-bank/internal/user"
+	userbalance "github.com/citadel-corp/paimon-bank/internal/user_balance"
 	"github.com/gorilla/mux"
 	"github.com/lmittmann/tint"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -61,6 +62,11 @@ func main() {
 	userService := user.NewService(userRepository)
 	userHandler := user.NewHandler(userService)
 
+	// initialize user balance domain
+	userBalanceRepository := userbalance.NewRepository(db)
+	userBalanceService := userbalance.NewService(userBalanceRepository)
+	userBalanceHandler := userbalance.NewHandler(userBalanceService)
+
 	// initialize image domain
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String("ap-southeast-1"),
@@ -88,6 +94,10 @@ func main() {
 	ur := v1.PathPrefix("/user").Subrouter()
 	ur.HandleFunc("/register", userHandler.CreateUser).Methods(http.MethodPost)
 	ur.HandleFunc("/login", userHandler.Login).Methods(http.MethodPost)
+
+	// user balance routes
+	ubr := v1.PathPrefix("/balance").Subrouter()
+	ubr.HandleFunc("", middleware.Authorized(userBalanceHandler.Create)).Methods(http.MethodPost)
 
 	// image routes
 	ir := v1.PathPrefix("/image").Subrouter()
