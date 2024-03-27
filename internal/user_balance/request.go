@@ -32,6 +32,23 @@ func (p CreateUserBalancePayload) Validate() error {
 	)
 }
 
+type CreateTransactionPayload struct {
+	RecipientBankAccountNumber string `json:"recipientBankAccountNumber"`
+	RecipientBankName          string `json:"recipientBankName"`
+	Balances                   int    `json:"balances"`
+	FromCurrency               string `json:"fromCurrency"`
+	UserID                     string
+}
+
+func (p CreateTransactionPayload) Validate() error {
+	return validation.ValidateStruct(&p,
+		validation.Field(&p.RecipientBankAccountNumber, validation.Required, validation.Length(5, 30)),
+		validation.Field(&p.RecipientBankName, validation.Required, validation.Length(5, 30)),
+		validation.Field(&p.Balances, validation.Required, validation.Min(0)),
+		validation.Field(&p.FromCurrency, validation.Required, is.CurrencyCode),
+	)
+}
+
 type ListUserBalancePayload struct {
 	UserID string
 }

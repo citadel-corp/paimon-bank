@@ -1,6 +1,7 @@
 package userbalance
 
 import (
+	"errors"
 	"net/http"
 )
 
@@ -12,4 +13,6 @@ var (
 	ErrorBadRequest    = Response{Code: http.StatusBadRequest, Message: "Bad Request"}
 	ErrorNoRecords     = Response{Code: http.StatusOK, Message: "No records found"}
 	ErrorNotFound      = Response{Code: http.StatusNotFound, Message: "No records found"}
+
+	ErrNotEnoughBalance = errors.New("not enough balance")
 )

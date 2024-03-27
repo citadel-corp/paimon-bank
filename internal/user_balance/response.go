@@ -11,8 +11,9 @@ type Response struct {
 }
 
 var (
-	SuccessCreateBalance = Response{Code: 200, Message: "Balance added successfully"}
-	SuccessListBalance   = Response{Code: 200, Message: "success"}
+	SuccessCreateBalance     = Response{Code: 200, Message: "Balance added successfully"}
+	SuccessCreateTransaction = Response{Code: 200, Message: "Transaction successful"}
+	SuccessListBalance       = Response{Code: 200, Message: "success"}
 )
 
 type UserBalanceResponse struct {

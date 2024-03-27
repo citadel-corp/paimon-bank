@@ -100,6 +100,10 @@ func main() {
 	ubr.HandleFunc("", middleware.Authorized(userBalanceHandler.Create)).Methods(http.MethodPost)
 	ubr.HandleFunc("", middleware.Authorized(userBalanceHandler.List)).Methods(http.MethodGet)
 
+	// transaction routes
+	txr := v1.PathPrefix("/transaction").Subrouter()
+	txr.HandleFunc("", middleware.Authorized(userBalanceHandler.Transaction)).Methods(http.MethodPost)
+
 	// image routes
 	ir := v1.PathPrefix("/image").Subrouter()
 	ir.HandleFunc("", middleware.Authorized(imageHandler.UploadToS3)).Methods(http.MethodPost)

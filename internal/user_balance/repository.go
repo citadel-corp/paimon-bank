@@ -3,12 +3,15 @@ package userbalance
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/citadel-corp/paimon-bank/internal/common/db"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Repository interface {
 	RecordBalance(ctx context.Context, payload CreateUserBalancePayload) error
+	RecordTransaction(ctx context.Context, payload CreateTransactionPayload) error
 	FindByUserID(ctx context.Context, userID string) ([]UserBalanceResponse, error)
 }
 
@@ -31,7 +34,7 @@ func (d *dbRepository) RecordBalance(ctx context.Context, payload CreateUserBala
 				$1, $2, $3
 			)
 			ON CONFLICT ON CONSTRAINT user_balance_user_id_currency_unique
-			DO UPDATE 
+			DO UPDATE
 				SET balance = user_balance.balance + $1;
 		`
 		_, err := d.db.DB().ExecContext(ctx, upsertBalanceQuery, payload.AddedBalance, payload.Currency, payload.UserID)
@@ -56,6 +59,47 @@ func (d *dbRepository) RecordBalance(ctx context.Context, payload CreateUserBala
 	})
 
 	return err
+}
+
+func (d *dbRepository) RecordTransaction(ctx context.Context, payload CreateTransactionPayload) error {
+	return d.db.StartTx(ctx, func(tx *sql.Tx) error {
+		updateBalanceQuery := `
+			UPDATE user_balance
+			SET balance = balance - $1
+			WHERE user_id = $2 and currency = $3
+		`
+		_, err := tx.ExecContext(ctx, updateBalanceQuery, payload.Balances, payload.UserID, payload.FromCurrency)
+		var pgErr *pgconn.PgError
+		if err != nil {
+			if errors.As(err, &pgErr) {
+				switch pgErr.Code {
+				case "23514":
+					if pgErr.ConstraintName == "balance_non_negative" {
+						return ErrNotEnoughBalance
+					}
+					return err
+				default:
+					return err
+				}
+			}
+			return err
+		}
+
+		// insert into transactions
+		createTransactionQuery := `
+			INSERT INTO user_transactions (
+				user_id, amount, currency, bank_account_number, bank_name
+			) VALUES (
+				$1, $2, $3, $4, $5
+			)
+		`
+		_, err = tx.ExecContext(ctx, createTransactionQuery, payload.UserID, -payload.Balances, payload.FromCurrency, payload.RecipientBankAccountNumber, payload.RecipientBankName)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (d *dbRepository) FindByUserID(ctx context.Context, userID string) ([]UserBalanceResponse, error) {

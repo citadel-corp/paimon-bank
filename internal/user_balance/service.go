@@ -8,6 +8,7 @@ import (
 
 type Service interface {
 	Create(ctx context.Context, req CreateUserBalancePayload) Response
+	CreateTransaction(ctx context.Context, req CreateTransactionPayload) Response
 	List(ctx context.Context, req ListUserBalancePayload) Response
 }
 
@@ -28,6 +29,23 @@ func (s *userBalanceService) Create(ctx context.Context, req CreateUserBalancePa
 	}
 
 	return SuccessCreateBalance
+}
+
+// CreateTransaction implements Service.
+func (s *userBalanceService) CreateTransaction(ctx context.Context, req CreateTransactionPayload) Response {
+	err := s.repository.RecordTransaction(ctx, req)
+	if errors.Is(err, ErrNotEnoughBalance) {
+		resp := ErrorBadRequest
+		resp.Error = err.Error()
+		return resp
+	}
+	if err != nil {
+		resp := ErrorInternal
+		resp.Error = err.Error()
+		return resp
+	}
+
+	return SuccessCreateTransaction
 }
 
 func (s *userBalanceService) List(ctx context.Context, req ListUserBalancePayload) Response {

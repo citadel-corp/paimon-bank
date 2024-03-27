@@ -60,6 +60,49 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) Transaction(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserID(r)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var req CreateTransactionPayload
+
+	err = request.DecodeJSON(w, r, &req)
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, response.ResponseBody{
+			Message: "Failed to decode JSON",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	req.UserID = userID
+
+	err = req.Validate()
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, response.ResponseBody{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	resp := h.service.CreateTransaction(r.Context(), req)
+	if resp.Error != "" {
+		response.JSON(w, resp.Code, response.ResponseBody{
+			Message: resp.Message,
+			Error:   resp.Error,
+		})
+		return
+	}
+
+	response.JSON(w, resp.Code, response.ResponseBody{
+		Message: resp.Message,
+	})
+}
+
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserID(r)
 	if err != nil {
