@@ -25,7 +25,7 @@ func NewRepository(db *db.DB) Repository {
 
 // Create implements Repository.
 func (d *dbRepository) RecordBalance(ctx context.Context, payload CreateUserBalancePayload) error {
-	err := d.db.StartTx(ctx, func(*sql.Tx) error {
+	return d.db.StartTx(ctx, func(tx *sql.Tx) error {
 		// upsert balance
 		upsertBalanceQuery := `
 			INSERT INTO user_balance (
@@ -37,7 +37,7 @@ func (d *dbRepository) RecordBalance(ctx context.Context, payload CreateUserBala
 			DO UPDATE
 				SET balance = user_balance.balance + $1;
 		`
-		_, err := d.db.DB().ExecContext(ctx, upsertBalanceQuery, payload.AddedBalance, payload.Currency, payload.UserID)
+		_, err := tx.ExecContext(ctx, upsertBalanceQuery, payload.AddedBalance, payload.Currency, payload.UserID)
 		if err != nil {
 			return err
 		}
@@ -50,15 +50,13 @@ func (d *dbRepository) RecordBalance(ctx context.Context, payload CreateUserBala
 				$1, $2, $3, $4, $5, $6
 			)
 		`
-		_, err = d.db.DB().ExecContext(ctx, createTransactionQuery, payload.UserID, payload.AddedBalance, payload.Currency, payload.SenderBankAccountNumber, payload.SenderBankName, payload.TransferProofImg)
+		_, err = tx.ExecContext(ctx, createTransactionQuery, payload.UserID, payload.AddedBalance, payload.Currency, payload.SenderBankAccountNumber, payload.SenderBankName, payload.TransferProofImg)
 		if err != nil {
 			return err
 		}
 
 		return nil
 	})
-
-	return err
 }
 
 func (d *dbRepository) RecordTransaction(ctx context.Context, payload CreateTransactionPayload) error {
