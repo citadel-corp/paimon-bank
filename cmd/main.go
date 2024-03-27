@@ -98,6 +98,7 @@ func main() {
 	// user balance routes
 	ubr := v1.PathPrefix("/balance").Subrouter()
 	ubr.HandleFunc("", middleware.Authorized(userBalanceHandler.Create)).Methods(http.MethodPost)
+	ubr.HandleFunc("", middleware.Authorized(userBalanceHandler.List)).Methods(http.MethodGet)
 
 	// image routes
 	ir := v1.PathPrefix("/image").Subrouter()

@@ -1,9 +1,14 @@
 package userbalance
 
-import "context"
+import (
+	"context"
+	"database/sql"
+	"errors"
+)
 
 type Service interface {
 	Create(ctx context.Context, req CreateUserBalancePayload) Response
+	List(ctx context.Context, req ListUserBalancePayload) Response
 }
 
 type userBalanceService struct {
@@ -23,4 +28,23 @@ func (s *userBalanceService) Create(ctx context.Context, req CreateUserBalancePa
 	}
 
 	return SuccessCreateBalance
+}
+
+func (s *userBalanceService) List(ctx context.Context, req ListUserBalancePayload) Response {
+	var resp Response
+
+	result, err := s.repository.FindByUserID(ctx, req.UserID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return SuccessListBalance
+		}
+		resp = ErrorInternal
+		resp.Error = err.Error()
+		return resp
+	}
+
+	resp = SuccessListBalance
+	resp.Data = result
+
+	return resp
 }

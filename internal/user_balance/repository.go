@@ -9,6 +9,7 @@ import (
 
 type Repository interface {
 	RecordBalance(ctx context.Context, payload CreateUserBalancePayload) error
+	FindByUserID(ctx context.Context, userID string) ([]UserBalanceResponse, error)
 }
 
 type dbRepository struct {
@@ -55,4 +56,32 @@ func (d *dbRepository) RecordBalance(ctx context.Context, payload CreateUserBala
 	})
 
 	return err
+}
+
+func (d *dbRepository) FindByUserID(ctx context.Context, userID string) ([]UserBalanceResponse, error) {
+	var response []UserBalanceResponse
+
+	selectQuery := `
+		SELECT balance, currency
+		FROM user_balance
+		WHERE user_id = $1
+		ORDER BY balance desc
+	`
+
+	rows, err := d.db.DB().QueryContext(ctx, selectQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var ub UserBalanceResponse
+		err = rows.Scan(&ub.Balance, &ub.Currency)
+		if err != nil {
+			return nil, err
+		}
+
+		response = append(response, ub)
+	}
+
+	return response, nil
 }
