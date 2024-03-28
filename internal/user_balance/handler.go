@@ -60,6 +60,49 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) Transaction(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserID(r)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var req CreateTransactionPayload
+
+	err = request.DecodeJSON(w, r, &req)
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, response.ResponseBody{
+			Message: "Failed to decode JSON",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	req.UserID = userID
+
+	err = req.Validate()
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, response.ResponseBody{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	resp := h.service.CreateTransaction(r.Context(), req)
+	if resp.Error != "" {
+		response.JSON(w, resp.Code, response.ResponseBody{
+			Message: resp.Message,
+			Error:   resp.Error,
+		})
+		return
+	}
+
+	response.JSON(w, resp.Code, response.ResponseBody{
+		Message: resp.Message,
+	})
+}
+
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserID(r)
 	if err != nil {
@@ -84,6 +127,53 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, resp.Code, response.ResponseBody{
 		Message: resp.Message,
 		Data:    resp.Data,
+	})
+}
+
+func (h *Handler) ListTransaction(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserID(r)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var req ListUserTransactionPayload
+	var params = r.URL.Query()
+	if v, ok := request.CheckPositiveInt(params, "limit"); ok {
+		req.Limit = v
+		if v == 0 {
+			req.Limit = 5
+		}
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if v, ok := request.CheckPositiveInt(params, "offset"); ok {
+		req.Offset = v
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	req.UserID = userID
+
+	resp := h.service.ListTransaction(r.Context(), req)
+	if resp.Error != "" {
+		response.JSON(w, resp.Code, response.ResponseBody{
+			Message: resp.Message,
+			Error:   resp.Error,
+		})
+		return
+	}
+
+	response.JSON(w, resp.Code, response.ResponseBody{
+		Message: resp.Message,
+		Data:    resp.Data,
+		Meta:    resp.Meta,
 	})
 }
 

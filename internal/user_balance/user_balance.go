@@ -9,3 +9,14 @@ type UserBalance struct {
 	UserID    uint64     `json:"user_id"`
 	CreatedAt *time.Time `json:"created_at"`
 }
+
+type UserTransaction struct {
+	TransactionID     string
+	UserID            string
+	Amount            int
+	Currency          string
+	BankAccountNumber string
+	BankName          string
+	ImageURL          *string
+	CreatedAt         time.Time
+}

@@ -1,0 +1,1 @@
+ALTER TABLE user_transactions ALTER COLUMN id TYPE SERIAL;
