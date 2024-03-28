@@ -7,8 +7,6 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # ⚠️ not a good production practice, because hacker can snoop the docker env within the docker container
-      # but we need it for our demonstration
       DB_NAME: ${DB_NAME}
       DB_PORT: ${DB_PORT}
       DB_HOST: ${DB_HOST}
