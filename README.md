@@ -71,8 +71,8 @@ Run the service
 
 Now you can run the service.  
 Service is running on port `8080`.  
-Prometheus is running on port `9090`.
-Grafana is running on port `3000`.
+Prometheus is running on port `9090`.  
+Grafana is running on port `3000`.  
 
 ## Endpoints
 
