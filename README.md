@@ -1,6 +1,6 @@
 # citadel-corp/paimon-bank
 
-API for simple Banking App service.
+I'm Commander Shepard, and This Is My Favorite 'Banking App Service' on the Citadel
 
 🔍 Tested with - TBA.
 
