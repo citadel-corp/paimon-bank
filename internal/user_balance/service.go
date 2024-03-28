@@ -10,6 +10,7 @@ type Service interface {
 	Create(ctx context.Context, req CreateUserBalancePayload) Response
 	CreateTransaction(ctx context.Context, req CreateTransactionPayload) Response
 	List(ctx context.Context, req ListUserBalancePayload) Response
+	ListTransaction(ctx context.Context, req ListUserTransactionPayload) Response
 }
 
 type userBalanceService struct {
@@ -54,15 +55,56 @@ func (s *userBalanceService) List(ctx context.Context, req ListUserBalancePayloa
 	result, err := s.repository.FindByUserID(ctx, req.UserID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return SuccessListBalance
+			return Success
 		}
 		resp = ErrorInternal
 		resp.Error = err.Error()
 		return resp
 	}
 
-	resp = SuccessListBalance
+	resp = Success
 	resp.Data = result
+
+	return resp
+}
+
+// ListTransaction implements Service.
+func (s *userBalanceService) ListTransaction(ctx context.Context, req ListUserTransactionPayload) Response {
+	var resp Response
+
+	result, pagination, err := s.repository.ListTransactions(ctx, req)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Success
+		}
+		resp = ErrorInternal
+		resp.Error = err.Error()
+		return resp
+	}
+	utResponse := make([]UserTransactionResponse, len(result))
+	for i, ut := range result {
+		imageURL := ""
+		if ut.ImageURL != nil {
+			imageURL = *ut.ImageURL
+		}
+		utResponse[i] = UserTransactionResponse{
+			TransactionID:    ut.TransactionID,
+			Balance:          ut.Amount,
+			Currency:         ut.Currency,
+			TransferProofImg: imageURL,
+			CreatedAt:        ut.CreatedAt.UnixMilli(),
+			Source: struct {
+				BankAccountNumber string "json:\"bankAccountNumber\""
+				BankName          string "json:\"bankName\""
+			}{
+				BankAccountNumber: ut.BankAccountNumber,
+				BankName:          ut.BankName,
+			},
+		}
+	}
+	resp = Success
+	resp.Data = utResponse
+	resp.Meta = pagination
 
 	return resp
 }

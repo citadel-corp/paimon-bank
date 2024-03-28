@@ -130,6 +130,53 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) ListTransaction(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserID(r)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var req ListUserTransactionPayload
+	var params = r.URL.Query()
+	if v, ok := request.CheckPositiveInt(params, "limit"); ok {
+		req.Limit = v
+		if v == 0 {
+			req.Limit = 5
+		}
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if v, ok := request.CheckPositiveInt(params, "offset"); ok {
+		req.Offset = v
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	req.UserID = userID
+
+	resp := h.service.ListTransaction(r.Context(), req)
+	if resp.Error != "" {
+		response.JSON(w, resp.Code, response.ResponseBody{
+			Message: resp.Message,
+			Error:   resp.Error,
+		})
+		return
+	}
+
+	response.JSON(w, resp.Code, response.ResponseBody{
+		Message: resp.Message,
+		Data:    resp.Data,
+		Meta:    resp.Meta,
+	})
+}
+
 func getUserID(r *http.Request) (string, error) {
 	if authValue, ok := r.Context().Value(middleware.ContextAuthKey{}).(string); ok {
 		return authValue, nil

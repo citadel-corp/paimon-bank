@@ -52,3 +52,9 @@ func (p CreateTransactionPayload) Validate() error {
 type ListUserBalancePayload struct {
 	UserID string
 }
+
+type ListUserTransactionPayload struct {
+	UserID string
+	Limit  int
+	Offset int
+}

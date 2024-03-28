@@ -7,6 +7,7 @@ import (
 
 	"github.com/citadel-corp/paimon-bank/internal/common/db"
 	"github.com/citadel-corp/paimon-bank/internal/common/id"
+	"github.com/citadel-corp/paimon-bank/internal/common/response"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -14,6 +15,7 @@ type Repository interface {
 	RecordBalance(ctx context.Context, payload CreateUserBalancePayload) error
 	RecordTransaction(ctx context.Context, payload CreateTransactionPayload) error
 	FindByUserID(ctx context.Context, userID string) ([]UserBalanceResponse, error)
+	ListTransactions(ctx context.Context, payload ListUserTransactionPayload) ([]UserTransaction, *response.Pagination, error)
 }
 
 type dbRepository struct {
@@ -127,4 +129,38 @@ func (d *dbRepository) FindByUserID(ctx context.Context, userID string) ([]UserB
 	}
 
 	return response, nil
+}
+
+// ListTransactions implements Repository.
+func (d *dbRepository) ListTransactions(ctx context.Context, payload ListUserTransactionPayload) ([]UserTransaction, *response.Pagination, error) {
+	var resp []UserTransaction
+	pagination := &response.Pagination{
+		Limit:  payload.Limit,
+		Offset: payload.Offset,
+	}
+
+	selectQuery := `
+		SELECT COUNT(*) OVER() AS total_count, *
+		FROM user_transactions
+		WHERE user_id = $1
+		LIMIT $2
+		OFFSET $3
+	`
+
+	rows, err := d.db.DB().QueryContext(ctx, selectQuery, payload.UserID, payload.Limit, payload.Offset)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for rows.Next() {
+		var ut UserTransaction
+		err = rows.Scan(&pagination.Total, &ut.TransactionID, &ut.UserID, &ut.Amount, &ut.Currency, &ut.BankAccountNumber, &ut.BankName, &ut.ImageURL, &ut.CreatedAt)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		resp = append(resp, ut)
+	}
+
+	return resp, pagination, nil
 }

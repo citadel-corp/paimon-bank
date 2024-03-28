@@ -99,6 +99,7 @@ func main() {
 	ubr := v1.PathPrefix("/balance").Subrouter()
 	ubr.HandleFunc("", middleware.Authorized(userBalanceHandler.Create)).Methods(http.MethodPost)
 	ubr.HandleFunc("", middleware.Authorized(userBalanceHandler.List)).Methods(http.MethodGet)
+	ubr.HandleFunc("/history", middleware.Authorized(userBalanceHandler.ListTransaction)).Methods(http.MethodGet)
 
 	// transaction routes
 	txr := v1.PathPrefix("/transaction").Subrouter()
