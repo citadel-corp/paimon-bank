@@ -14,5 +14,6 @@ var (
 	ErrorNoRecords     = Response{Code: http.StatusOK, Message: "No records found"}
 	ErrorNotFound      = Response{Code: http.StatusNotFound, Message: "No records found"}
 
-	ErrNotEnoughBalance = errors.New("not enough balance")
+	ErrNotEnoughBalance         = errors.New("not enough balance")
+	ErrNoCurrencyOrUserRecorded = errors.New("no user or balance with requested currency")
 )
