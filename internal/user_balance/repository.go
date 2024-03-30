@@ -68,10 +68,16 @@ func (d *dbRepository) RecordTransaction(ctx context.Context, payload CreateTran
 			UPDATE user_balance
 			SET balance = balance - $1
 			WHERE user_id = $2 and currency = $3
+			RETURNING id
 		`
-		_, err := tx.ExecContext(ctx, updateBalanceQuery, payload.Balances, payload.UserID, payload.FromCurrency)
+		row := tx.QueryRowContext(ctx, updateBalanceQuery, payload.Balances, payload.UserID, payload.FromCurrency)
+		var userBalanceID uint64
+		err := row.Scan(&userBalanceID)
 		var pgErr *pgconn.PgError
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return ErrNoCurrencyOrUserRecorded
+			}
 			if errors.As(err, &pgErr) {
 				switch pgErr.Code {
 				case "23514":
@@ -84,6 +90,10 @@ func (d *dbRepository) RecordTransaction(ctx context.Context, payload CreateTran
 				}
 			}
 			return err
+		}
+
+		if userBalanceID == 0 {
+			return ErrNoCurrencyOrUserRecorded
 		}
 
 		// insert into transactions
@@ -104,7 +114,7 @@ func (d *dbRepository) RecordTransaction(ctx context.Context, payload CreateTran
 }
 
 func (d *dbRepository) FindByUserID(ctx context.Context, userID string) ([]UserBalanceResponse, error) {
-	var response []UserBalanceResponse
+	response := []UserBalanceResponse{}
 
 	selectQuery := `
 		SELECT balance, currency
