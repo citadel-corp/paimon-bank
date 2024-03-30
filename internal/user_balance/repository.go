@@ -114,7 +114,7 @@ func (d *dbRepository) RecordTransaction(ctx context.Context, payload CreateTran
 }
 
 func (d *dbRepository) FindByUserID(ctx context.Context, userID string) ([]UserBalanceResponse, error) {
-	var response []UserBalanceResponse
+	response := []UserBalanceResponse{}
 
 	selectQuery := `
 		SELECT balance, currency
