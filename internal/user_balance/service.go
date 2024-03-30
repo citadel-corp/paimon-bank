@@ -40,6 +40,11 @@ func (s *userBalanceService) CreateTransaction(ctx context.Context, req CreateTr
 		resp.Error = err.Error()
 		return resp
 	}
+	if errors.Is(err, ErrNoCurrencyOrUserRecorded) {
+		resp := ErrorBadRequest
+		resp.Error = err.Error()
+		return resp
+	}
 	if err != nil {
 		resp := ErrorInternal
 		resp.Error = err.Error()
