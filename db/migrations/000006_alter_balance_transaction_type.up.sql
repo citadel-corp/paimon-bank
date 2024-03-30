@@ -1,0 +1,2 @@
+ALTER TABLE user_balance ALTER COLUMN balance TYPE NUMERIC;
+ALTER TABLE user_transactions ALTER COLUMN amount TYPE NUMERIC;
