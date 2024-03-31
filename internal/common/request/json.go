@@ -11,7 +11,7 @@ import (
 
 func DecodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	dec := json.NewDecoder(r.Body)
-	dec.DisallowUnknownFields()
+	// dec.DisallowUnknownFields()
 
 	err := dec.Decode(dst)
 	if err != nil {
