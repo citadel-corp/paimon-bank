@@ -153,6 +153,7 @@ func (d *dbRepository) ListTransactions(ctx context.Context, payload ListUserTra
 		SELECT COUNT(*) OVER() AS total_count, *
 		FROM user_transactions
 		WHERE user_id = $1
+		ORDER BY created_at DESC
 		LIMIT $2
 		OFFSET $3
 	`
