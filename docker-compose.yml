@@ -6,6 +6,8 @@ services:
       dockerfile: dockerfiles/backend/Dockerfile
     ports:
       - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - /home/ubuntu/ap-southeast-1-bundle.pem:/home/ubuntu/ap-southeast-1-bundle.pem
     environment:
@@ -50,6 +52,8 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - grafana_data:/var/lib/grafana
       # • `grafana_data` refers to `volumes.grafana_data` used to make grafana information presists each restart
