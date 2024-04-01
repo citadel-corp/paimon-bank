@@ -8,6 +8,7 @@
 *.so
 *.dylib
 __debug*
+main_*
 
 # Test binary, built with `go test -c`
 *.test
@@ -22,4 +23,9 @@ __debug*
 # Go workspace file
 go.work
 
+# deployment
 .env
+
+# keys or certificates
+*.pem
+
