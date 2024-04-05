@@ -11,11 +11,13 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main cmd/main.go
 
 # Step 2: Use a minimal base image to run the application
-FROM alpine:latest  
+FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
+
+COPY ap-southeast-1-bundle.pem .
 
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/main .
