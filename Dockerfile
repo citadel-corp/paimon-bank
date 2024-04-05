@@ -17,6 +17,8 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 
+COPY ap-southeast-1-bundle.pem .
+
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/main .
 
